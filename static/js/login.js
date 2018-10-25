@@ -24,6 +24,7 @@ $(document).ready(function() {
     });
     $(".form-login").submit(function(e){
         e.preventDefault();
+        $("#imgcode-err").hide();
         mobile = $("#mobile").val();
         passwd = $("#password").val();
         imgcode = $("#imagecode").val();
@@ -58,7 +59,7 @@ $(document).ready(function() {
                 if ("4105" == data.errcode){
                     location.href = "/"
                 } else if ("0" == data.errcode) {
-                    // location.href = data.url;
+                    location.href = "/home.html";
                     return;
                 }
                 else {

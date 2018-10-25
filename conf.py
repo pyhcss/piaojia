@@ -15,7 +15,7 @@ db_conf = {
     "host":"127.0.0.1",
     "database":"piaojia",
     "user":"root",
-    "password":"yunlong",
+    "password":"******",
     "time_zone":"+8:00",
 }
 
@@ -25,7 +25,7 @@ redis_conf = {
     "port":6379,
 }
 
-GLOBAL_WORD = u"小鸡炖蘑菇"                  # 口令
+GLOBAL_WORD = u"******"                  # 口令
                                             # token
-GLOBAL_TOKEN = "Y9i6Mg5oQfW/2Up3DzY8J8W3IYUivk08hi6H3HTT6qQ="
+GLOBAL_TOKEN = "******"
 SESSION_MAX_TIME = 60*60*24*3               # session有效期
