@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>票家-预定提交</title>
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/reset.css" rel="stylesheet">
+    <link href="../css/main.css" rel="stylesheet">
+    <link href="../css/submit.css" rel="stylesheet">
+    <link href="../css/bootstrap-datepicker.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+
+        <div class="top-bar">
+            <div class="nav-bar">
+                <h3 class="page-title">票家-预定提交</h3>
+                <a class="nav-btn fl" href="index.html"><span><i class="fa fa-angle-left fa-2x"></i></span></a>
+            </div>
+        </div>
+
+        <form class="form-register">
+            <div class="form-group form-group-lg">
+                <div class="input-group new_style">
+                    <input type="text" class="form-control" name="mobile" id="mobile" placeholder="出发地" required>
+                </div>
+            </div>
+            <div class="error-msg" id="mobile-err"><i class="fa fa-exclamation-circle"></i><span></span></div>
+             <div class="form-group form-group-lg">
+                <div class="input-group new_style">
+                    <input type="text" class="form-control" name="email" id="email" placeholder="目的地" required>
+                </div>
+            </div>
+
+            <div class="form-group form-group-lg">
+                <button class="filter-btn" type="button" data-toggle="modal" data-target="#start-date-modal" style="border: 2px solid #dcdbdb"><span class="fl" id="start-date-btn" style="font-size: 16px;color:#999">出发日期</span><span class="fr"><i class="fa fa-calendar fa-lg fa-fw"></i></span></button>
+                <div class="modal fade" id="start-date-modal" tabindex="-1" role="dialog" aria-labelledby="start-date-label">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title" id="start-date-label">出发日期</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div class="date-select" id="start-date"></div>
+                                <input type="hidden" id="start-date-input">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-theme" onclick="setStartDate();">确定</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="error-msg" id="password-err"><i class="fa fa-exclamation-circle"></i><span></span></div>
+
+            <div class="error-msg" id="email-err"><i class="fa fa-exclamation-circle"></i><span></span></div>
+            <div class="form-group form-group-lg">
+                <div class="input-group new_style">
+                    <input type="text" class="form-control" name="imagecode" id="imagecode" placeholder="列车号、多个之间用逗号隔开" required>
+                </div>
+            </div>
+            <div class="error-msg" id="image-code-err"><i class="fa fa-exclamation-circle"></i><span></span></div>
+            <div class="form-group form-group-lg">
+                <div class="input-group new_style">
+                    <input type="text" class="form-control" name="password" id="password" placeholder="座位类型、例:二等座" required>
+                </div>
+            </div>
+            <div class="error-msg" id="phone-code-err"><i class="fa fa-exclamation-circle"></i><span></span></div>
+             <div class="form-group form-group-lg">
+                <div class="input-group new_style">
+                    <input type="text" class="form-control" name="phonecode" id="phonecode" placeholder="乘车人姓名、多个之间用逗号隔开" required>
+                </div>
+            </div>
+
+            <div class="error-msg" id="password2-err"><i class="fa fa-exclamation-circle"></i><span></span></div>
+            <button type="submit" class="btn btn-lg btn-theme btn-block">提交预订单</button>
+        </form>
+        <div class="footer">
+            <p><span><i class="fa fa-copyright"></i></span>票家&nbsp;&nbsp;风一样的速度</p>
+        </div> 
+    </div>
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/submit.js"></script>
+    <script src="../js/bootstrap-datepicker.min.js"></script>
+    <script src="../js/bootstrap-datepicker.zh-CN.min.js"></script>
+</body>
+</html>

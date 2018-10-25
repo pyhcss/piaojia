@@ -1,0 +1,84 @@
+body {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: #fff;
+}
+.container {
+    padding-right: 5px;
+    padding-left: 5px;
+}
+.form-login {
+    max-width: 330px;
+    padding: 10px;
+    margin: 0 auto;
+    text-align: center;
+}
+.input-group-addon {
+    background-color: #fff; 
+    color: #959ea7;
+    padding: 6px;
+}
+.input-group-addon, .form-control {
+    border: 1px solid #dcdbdb;
+}
+.fa-fw {
+    width: 30px;
+}
+.form-login .form-control {
+  position: relative;
+  height: auto;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+  padding: 10px;
+  font-size: 16px;
+}
+.form-login .form-control:focus {
+  z-index: 2;
+}
+.register-a {
+    text-align: right;
+    margin-top: 16px;
+    font-size: 14px;
+}
+.error-msg {
+    display: none;
+    font-size: 14px;
+    color: red;
+    margin: -10px 0px 10px 10px;
+}
+.error-msg i {
+    margin-right: 5px;
+}
+
+
+.tishi {
+    color:#000;
+    font-size: 18px;
+}
+.top-bar {
+    margin: 0 auto;
+    width: 310px;
+    background-color: #eee;
+    z-index: 2;
+}
+.nav-bar {
+    width: 100%;
+    height: 35px; 
+    text-align: center;
+    position: relative;
+    border-bottom: 1px solid #eee;
+    background-color: #fff;
+}
+.page-title {
+    display: block;
+    line-height: 35px;
+    font-size: 20px;
+}
+.nav-btn {
+    position: absolute; 
+    top: 0;
+    left: 10px;
+    color: #000;
+    font-size: 16px;
+}
