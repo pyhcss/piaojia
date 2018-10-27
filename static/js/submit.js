@@ -1,89 +1,7 @@
+//获取cookie
 function getCookie(name) {
     var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
     return r ? r[1] : undefined;
-}
-
-var imageCodeId = "";
-
-function generateUUID() {
-    var d = new Date().getTime();
-    if(window.performance && typeof window.performance.now === "function"){
-        d += performance.now(); //use high-precision timer if available
-    }
-    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = (d + Math.random()*16)%16 | 0;
-        d = Math.floor(d/16);
-        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
-    });
-    return uuid;
-}
-
-function generateImageCode() {
-    var picId = generateUUID();
-    $(".image-code img").attr("src", "/api/imagecode?pre="+imageCodeId+"&cur="+picId);
-    imageCodeId = picId;
-}
-
-function sendSMSCode() {
-    $(".phonecode-a").removeAttr("onclick");
-    var mobile = $("#mobile").val();
-    if (!mobile) {
-        $("#mobile-err span").html("请填写正确的手机号！");
-        $("#mobile-err").show();
-        $(".phonecode-a").attr("onclick", "sendSMSCode();");
-        return;
-    }
-    var email = $("#email").val();
-    if (!email) {
-        $("#email-err span").html("请填写正确的邮箱！");
-        $("#email-err").show();
-        $(".phonecode-a").attr("onclick", "sendSMSCode();");
-        return;
-    }
-    var imageCode = $("#imagecode").val();
-    if (!imageCode) {
-        $("#image-code-err span").html("请填写验证码！");
-        $("#image-code-err").show();
-        $(".phonecode-a").attr("onclick", "sendSMSCode();");
-        return;
-    }
-    var data = {mobile:mobile,email:email, imagecode:imageCode, imagecode_id:imageCodeId};
-    $.ajax({
-        url: "/api/emailcode",
-        method: "POST",
-        headers: {
-            "X-XSRFTOKEN": getCookie("_xsrf")
-        },
-        data: JSON.stringify(data),
-        contentType: "application/json",
-        dataType: "json",
-        success: function (data) {
-            // data = {
-            //     errcode
-            //     errmsg
-            // }
-            if ("0" == data.errcode) {
-                var duration = 60;
-                var timeObj = setInterval(function () {
-                    duration = duration - 1;
-                    $(".phonecode-a").html(duration+"秒");
-                    if (1 == duration) {
-                        clearInterval(timeObj);
-                        $(".phonecode-a").html("获取验证码");
-                        $(".phonecode-a").attr("onclick", "sendSMSCode();")
-                    }
-                }, 1000, 60)
-            } else {
-                $("#image-code-err span").html(data.errmsg);
-                $("#image-code-err").show();
-                $(".phonecode-a").attr("onclick", "sendSMSCode();");
-                if (data.errcode == "4002" || data.errcode == "4004") {
-                    generateImageCode();
-                }
-            }
-        }
-    })
-
 }
 
 //模态框居中的控制
@@ -93,18 +11,145 @@ function centerModals(){
         var top = Math.round(($clone.height() - $clone.find('.modal-content').height()) / 2);
         top = top > 0 ? top : 0;
         $clone.remove();
-        $(this).find('.modal-content').css("margin-top", top-30);  //修正原先已经有的30个像素
+        $(this).find('.modal-content').css("margin-top", top);  //-30);  //修正原先已经有的30个像素
     });
 }
 
+//清除车次模态框
+function clearTrainModal(){
+    if ($("#train_button").attr("data-target")){
+        $("#train-btn").html("列车号");
+        $("#train-btn").css({"color":"#999"});
+        $("#train_button").removeAttr("data-target");
+    }
+}
+
+//设置出发时间
 function setStartDate() {
     var startDate = $("#start-date-input").val();
     if (startDate) {
-        $(".search-btn").attr("start-date", startDate);
         $("#start-date-btn").html(startDate);
         $("#start-date-btn").css({"color":"#555"});
     }
     $("#start-date-modal").modal("hide");
+}
+
+//设置车次信息
+function setTrains(){
+    var trains = "";
+    $(".train-list input[type='checkbox']:checked").each(function () {
+        trains += $(this).val() + ",";
+    });
+    trains = trains.substring(0,trains.length-1);
+    if (trains){
+        $("#train-btn").html(trains);
+        $("#train-btn").css({"color":"#555"});
+    } else{
+        $("#train-btn").html("列车号");
+        $("#train-btn").css({"color":"#999"});
+    }
+    $("#train-modal").modal("hide");
+}
+
+//设置座位类型
+function setSeats(){
+    var seats = "";
+    $(".seat-list input[type='checkbox']:checked").each(function () {
+        seats += $(this).val() + ",";
+    });
+    seats = seats.substring(0,seats.length-1);
+    if (seats){
+        $("#seat-btn").html(seats);
+        $("#seat-btn").css({"color":"#555"});
+    } else{
+        $("#seat-btn").html("座位类型");
+        $("#seat-btn").css({"color":"#999"});
+    }
+    $("#seat-modal").modal("hide");
+}
+
+//设置乘车人
+function setPersons(){
+    var persons = "";
+    $(".person-list input[type='checkbox']:checked").each(function () {
+        persons += $(this).val() + ",";
+    });
+    persons = persons.substring(0,persons.length-1);
+    if (persons){
+        $("#person-btn").html(persons);
+        $("#person-btn").css({"color":"#555"});
+    } else{
+        $("#person-btn").html("乘车人");
+        $("#person-btn").css({"color":"#999"});
+    }
+    $("#person-modal").modal("hide");
+}
+
+function getTrains(){
+    $("#train_button").removeAttr("onclick");
+    var from = $("#from").val();
+    var to = $("#to").val();
+    var date = $("#start-date-btn").html();
+    if (!from){
+        $("#from-err span").html("出发地不能为空");
+        $("#from-err").show();
+        $("#train_button").attr({"onclick":"getTrains();"});
+        return;
+    } else {
+        $("#from-err").hide();
+    }
+    if (!to){
+        $("#to-err span").html("目的地不能为空");
+        $("#to-err").show();
+        $("#train_button").attr({"onclick":"getTrains();"});
+        return;
+    } else {
+        $("#to-err").hide();
+    }
+    if (!date || date=="出发日期"){
+        $("#date-err span").html("出发日期不能为空");
+        $("#date-err").show();
+        $("#train_button").attr({"onclick":"getTrains();"});
+        return;
+    } else {
+        $("#date-err").hide();
+    }
+    $.get(
+        "/api/trainsinfo",
+        {"from":from,"to":to,"date":date},
+        function(data){
+            if (data.errcode == "0"){
+                $(".train-list").html(template("train-list-tmpl", {trains:data.trains}));
+                $("#train-modal").modal("show");
+                $("#train_button").attr({"data-target":"#train-modal"});
+            } else if(data.errcode == "4101"){
+                location.href="/login.html";
+            } else {
+                $("#date-err span").html(data.errmsg);
+                $("#date-err").show();
+            }
+            $("#train_button").attr({"onclick":"getTrains();"});
+        })
+}
+
+function updatePersons() {
+    $("#update_persons").removeAttr("onclick");
+    $("#update_persons").css({"background-color":"#ddd","border-color":"#ddd"});
+    $.post(
+        "/api/updatepersons",
+        {"_xsrf":getCookie("_xsrf")},
+        function(data){
+            if (data.errcode == "0"){
+                $(".person-list").html(template("person-list-tmpl", {persons:data.persons}));
+                $("#person-modal").modal("show");
+                $("#person_button").attr({"data-target":"#person-modal"});
+            } else if(data.errcode == "4101"){
+                location.href="/login.html";
+            } else {
+                $("#person-err span").html(data.errmsg);
+                $("#person-err").show();
+            }
+        })
 }
 
 $(function() {
@@ -121,75 +166,88 @@ $(function() {
         $("#start-date-input").val(date);
     });  
 
-    generateImageCode();
-    $("#mobile").focus(function () {
-        $("#mobile-err").hide();
-    });
-    $("#email").focus(function () {
-        $("#email-err").hide();
-    });
-    $("#imagecode").focus(function () {
-        $("#image-code-err").hide();
-    });
-    $("#phonecode").focus(function () {
-        $("#phone-code-err").hide();
-    });
-    $("#password").focus(function () {
-        $("#password-err").hide();
-        $("#password2-err").hide();
-    });
-    $("#password2").focus(function () {
-        $("#password2-err").hide();
-    });
-
+    $.get("/api/personsinfo", function(data){
+        if (data.errcode == "0"){
+            $(".person-list").html(template("person-list-tmpl", {persons:data.persons}));
+            $("#person_button").attr({"data-target":"#person-modal"});
+            return;
+        } else if("4101" == data.errcode){
+            location.href="/login.html";
+            return;
+        } else {
+            location.href="/submit.html";
+            return;
+            }
+        });
     // 当用户点击表单提交按钮时执行自己定义的函数
     $(".form-register").submit(function (e) {
         // 阻止浏览器对于表单的默认行为
         e.preventDefault();
-
         // 校验用户填写的参数
-        mobile = $("#mobile").val();
+        from = $("#from").val();
+        to = $("#to").val();
+        date = $("#start-date-btn").html();
+        trains = $("#train-btn").html();
+        seats = $("#seat-btn").html();
+        persons = $("#person-btn").html();
         email = $("#email").val();
-        phonecode = $("#phonecode").val();
-        passwd = $("#password").val();
-        passwd2 = $("#password2").val();
-        if (!mobile) {
-            $("#mobile-err span").html("请填写正确的手机号！");
-            $("#mobile-err").show();
+        if (!from) {
+            $("#from-err span").html("出发地不能为空");
+            $("#from-err").show();
             return false;
+        } else{
+            $("#from-err").hide();
+        }
+        if (!to) {
+            $("#to-err span").html("目的地不能为空");
+            $("#to-err").show();
+            return false;
+        } else{
+            $("#to-err").hide();
+        }
+        if (!date || date=="出发日期") {
+            $("#date-err span").html("出发日期不能为空");
+            $("#date-err").show();
+            return false;
+        } else{
+            $("#date-err").hide();
+        }
+        if (!trains || trains=="列车号") {
+            $("#train-err span").html("列车号不能为空");
+            $("#train-err").show();
+            return false;
+        } else{
+            $("#train-err").hide();
+        }
+        if (!seats || seats=="座位类型") {
+            $("#seat-err span").html("座位类型不能为空");
+            $("#seat-err").show();
+            return false;
+        } else{
+            $("#seat-err").hide();
+        }
+        if (!persons || persons=="乘车人") {
+            $("#person-err span").html("乘车人不能为空");
+            $("#person-err").show();
+            return false;
+        } else{
+            $("#person-err").hide();
         }
         if (!email) {
-            $("#email-err span").html("请填写正确的邮箱！");
+            $("#email-err span").html("接收邮箱不能为空");
             $("#email-err").show();
             return false;
-    }
-        if (!phonecode) {
-            $("#phone-code-err span").html("请填写短信验证码！");
-            $("#phone-code-err").show();
-            return false;
-        }
-        if (!passwd) {
-            $("#password-err span").html("请填写密码!");
-            $("#password-err").show();
-            return false;
-        }
-        if (passwd != passwd2) {
-            $("#password2-err span").html("两次密码不一致!");
-            $("#password2-err").show();
-            return false;
+        } else{
+            $("#email-err").hide();
         }
 
         // 声明一个要保存结果的变量
-        var data = {};
-        // 把表单中的数据填充到data中
-        $(".form-register").serializeArray().map(function (x) {
-            data[x.name] = x.value
-        });
+        var data = {"from":from,"to":to,"date":date,"trains":trains,"seats":seats,"persons":persons,"email":email};
         // 把data变量转为josn格式字符串
         var json_data = JSON.stringify(data);
         //向后端发送请求
         $.ajax({
-            url: "/api/newregister",
+            url: "/api/submitorder",
             method: "POST",
             data: json_data,
             contentType: "application/json", // 告诉后端服务器，发送的请求数据是json格式的
@@ -199,47 +257,15 @@ $(function() {
             },
             success: function (data) {
                 if ("0" == data.errcode) {
-                    location.href = "/";
-                } else if ("邮箱验证码已过期" == data.errmsg || "邮箱验证码错误" == data.errmsg || "手机号已被注册" == data.errmsg ) {
-                    $("#phone-code-err span").html(data.errmsg);
-                    $("#phone-code-err").show();
-                } else{
-                    $("#phone-code-err span").html("注册失败、请稍后再试");
-                    $("#phone-code-err").show();
+                    alert("订单提交成功，请在我的订单中查看详细情况");
+                    location.href = "/home.html";
+                } else if("4101" == data.errcode){
+                    location.href = "/login.html";
+                }else {
+                    $("#email-code-err span").html("注册失败、请稍后再试");
+                    $("#email-code-err").show();
                 }
-
             }
         })
     });
-})
-
-// $(".form-register").serializeArray()
-//     li = [Object, Object, Object, Object, Object]
-//     [0:Object
-//         name: "mobile"
-//         value: "18111111111"
-//
-//     1:Object
-//         name: "phonecode"
-//         value: "1234"
-//             ...
-//     ]
-//
-//     {
-//         mobile: 181111111,
-//             phonecode: 1234
-//     }
-//
-//     $(".form-register").serializeArray().map(action)
-//
-// for ele in li:
-//     fun(ele)
-//
-//
-//     dict = {}
-//
-//     function action(x){
-//         x.name
-//         x.value
-//         dict[x.name] = x.value
-//     }
+});

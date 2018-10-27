@@ -1,5 +1,6 @@
 # coding=utf-8
 
+import time
 import json
 import tornado.web
 import tornado.gen
@@ -34,7 +35,11 @@ class ImageCodeHandler(BaseHandler):
     @tornado.gen.coroutine
     def get(self):
         """获取验证码"""
-        captcha = Captcha()                             # 创建生成验证码对象
+        cookies = self.get_secure_cookie("captcha_id")
+        if cookies:
+            captcha = Captcha(json.loads(cookies))      # 创建生成验证码对象
+        else:
+            captcha = Captcha()
         dict_data = yield captcha.get_captcha()         # 获取验证码返回值
                                                         # 设置cookie 验证码校验值
         self.set_secure_cookie("captcha_id",json.dumps(dict_data["cookies"],ensure_ascii=False).encode("utf-8"))
@@ -56,38 +61,35 @@ class LoginHandler(BaseHandler):
             raise tornado.gen.Return(self.write({"errcode": "4103", "errmsg": "参数错误"}))
         if not captcha_id:
             raise tornado.gen.Return(self.write({"errcode": "4103", "errmsg": "参数错误"}))
-        captcha = Captcha()                             # 创建验证码对象
-                                                        # 发送请求检验验证码值
-        dict_data = yield captcha.check_captcha(json.loads(captcha_id),captcha_text)
+        captcha = Captcha(json.loads(captcha_id))       # 创建验证码对象
+        dict_data = yield captcha.check_captcha(captcha_text)# 发送请求检验验证码值
         if dict_data["errcode"] == "7":                 # 验证码过期
             raise tornado.gen.Return(self.write({"errcode": "4103", "errmsg": "验证码已过期"}))
         elif dict_data["errcode"] == "5":               # 验证码错误
             raise tornado.gen.Return(self.write({"errcode": "4103", "errmsg": "验证码错误"}))
         elif dict_data["errcode"] == "4":               # 验证码正确
-            check_login = CheckLogin()                  # 发送请求验证账号密码
-            resp = yield check_login.get_uamtk(user_number,user_pwd,dict_data["cookies"])
-            if resp["errcode"] == "0":                  # 账号密码正确
-                                                        # 发送请求获取用户名
-                resp = yield check_login.get_user_name(resp["cookies"])
-                if resp["errcode"] == "0":              # 用户名获取成功 查询数据库
-                    user = self.db.get("select id from user_info where ui_account=%s",user_number)
-                    if user == None:                    # 如果无数据则插入
-                        user_id = self.db.execute("insert into user_info(ui_name,ui_account,ui_pwd) values(%s,%s,%s)",resp["username"],user_number,user_pwd)
-                    else:                               # 否则更新数据
-                        self.db.execute("update user_info set ui_pwd=%s,ui_login=ui_login+1 where ui_account=%s",user_pwd,user_number)
-                        user_id = user["id"]
-                    session = Session(self)             # 创建session对象
-                    session.data["user_name"] = resp["username"]
-                    session.data["user_account"] = user_number
-                    session.data["user_id"] = user_id
-                    session.data["cookies"] = resp["cookies"]
-                    session.save()                      # 写入数据并设置cookie
-                    self.clear_cookie("captcha-id")     # 删除验证码验证数据 返回登录成功
-                    raise tornado.gen.Return(self.write({"errcode": "0", "errmsg": "登录成功"}))
-                else:
-                    raise tornado.gen.Return(self.write({"errcode": "4106", "errmsg": "用户名或者密码错误"}))
-            else:                                       # 账号密码错误
+            time.sleep(3)
+            check_login = CheckLogin(dict_data["cookies"])# 发送请求验证账号密码
+            resp = yield check_login.get_uamtk(user_number,user_pwd)
+            if resp["errcode"] != "0":                  # 账号密码错误
                 raise tornado.gen.Return(self.write({"errcode": "4106", "errmsg": "用户名或密码错误"}))
+            resp = yield check_login.get_user_name()    # 发送请求获取用户名
+            if resp["errcode"] != "0":                  # 获取失败
+                raise tornado.gen.Return(self.write({"errcode": "4106", "errmsg": "用户名或者密码错误2"}))
+            user = self.db.get("select id from user_info where ui_account=%s",user_number)
+            if user == None:                            # 如果无数据则插入
+                user_id = self.db.execute("insert into user_info(ui_name,ui_account,ui_pwd) values(%s,%s,%s)",resp["username"],user_number,user_pwd)
+            else:                                       # 否则更新数据
+                self.db.execute("update user_info set ui_pwd=%s,ui_login=ui_login+1 where ui_account=%s",user_pwd,user_number)
+                user_id = user["id"]
+            session = Session(self)                     # 创建session对象
+            session.data["user_name"] = resp["username"]
+            session.data["user_account"] = user_number
+            session.data["user_id"] = user_id
+            session.data["cookies"] = resp["cookies"]
+            session.save()                              # 写入数据并设置cookie
+            self.clear_cookie("captcha-id")             # 删除验证码验证数据 返回登录成功
+            raise tornado.gen.Return(self.write({"errcode": "0", "errmsg": "登录成功"}))
         else:                                           # 验证码检验未知情况
             raise tornado.gen.Return(self.write({"errcode": "4301", "errmsg": "第三方错误,请及时联系管理员"}))
 

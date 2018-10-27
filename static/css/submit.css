@@ -23,24 +23,10 @@ body {
     padding: 6px;
 }
 .input-group-addon, .form-control {
-    border: 1px solid #dcdbdb;
+    border: 1.5px solid #dcdbdb;
 }
 .fa-fw {
     width: 30px;
-}
-.phonecode {
-    background-color: #eeedf1;
-    padding: 6px 4px;
-    width: 90px;
-    text-align: center;
-}
-.phonecode-a {
-    font-size: 16px;
-    color: #797878;
-}
-.phonecode-a:focus, .phonecode-a:hover {
-    text-decoration: none;
-    color: #797878;
 }
 .form-register .form-control {
   position: relative;
@@ -59,13 +45,6 @@ body {
     margin-top: 16px;
     font-size: 14px;
 }
-.image-code {
-    padding: 0;
-}
-.image-code img{
-    width: 90px;
-    height: 41px;
-}
 .error-msg {
     display: none;
     font-size: 14px;
@@ -82,7 +61,7 @@ body {
 .filter-btn {
     display: block;
     width: 100%;
-    height: 40px;
+    height: 44px;
     background-color: #fff;
     border: none;
     color: #585858;
@@ -100,15 +79,21 @@ body {
 .modal-body {
     padding: 0;
 }
-.area-list a {
-    display: inline-block;
+.train-list input {
     width: auto;
-    height: 20px; 
-    margin: 10px;
+    height: 40px; 
+    margin: 0px 5px 0 10px;
     font-size: 16px;
 }
-.area-list a:hover, .user-name:hover {
-    text-decoration: none;
+.train-list p {
+    font-size: 15px;
+}
+.person-list p,.seat-list p{
+    margin:10px 0px 10px 5px;
+    font-size: 16px;
+}
+.person-list input,.seat-list input{
+    margin:10px 0px 10px 10px;
 }
 .date-select {
     font-size: 16px;
@@ -142,4 +127,9 @@ body {
     left: 10px;
     color: #000;
     font-size: 16px;
+}
+.min_width {
+    display: inline-block;
+    margin:5px;
+    width:130px;
 }
