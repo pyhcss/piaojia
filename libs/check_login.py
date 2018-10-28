@@ -115,10 +115,7 @@ class CheckLogin(Base_Httpclient):
             data = json.loads(resp.body)                        # 解析数据
             if not data["data"]["flag"]:                        # 判断是否登陆成功
                 print resp.body
-                if a == 2:
-                    time.sleep(1)
-                else:
-                    time.sleep(2)
+                time.sleep(1)
                 a += 1
                 continue
             else:

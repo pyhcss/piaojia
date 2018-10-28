@@ -42,14 +42,16 @@ body {
 }
 .orders-con {
     min-height: 100%;
-    margin-top: 38px;
+    /*margin-top: 38px;*/
 }
 .orders-list {
-    padding: 10px;
+    padding: 2px;
+    width: 330px;
+    margin:0 auto;
 }
 .orders-list>li {
     font-size: 14px;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 .order-title {
     background-color: #fff;
@@ -58,6 +60,7 @@ body {
     border-bottom: 1px solid #eee;
     padding: 10px;
     color: #666;
+    position: relative;
 }
 .order-title>a {
     color: #4f4f4f;
@@ -67,13 +70,24 @@ body {
     text-decoration: none;
 }
 .order-title>h3 {
-    display: inline;
+    font-size: 17px;
+    margin-top: 1px;
+}
+.order-title>h5 {
+    position: absolute;
+    top: 13px;
+}
+.order-title>h4 {
+    position: absolute;
+    top: 12px;
+    left: 265px;
+    font-size: 16px;
 }
 .order-content {
     background-color: #fff; 
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
-    padding: 10px;
+    padding: 3px;
 }
 .order-content>img {
     width: 30%;
@@ -81,8 +95,8 @@ body {
 }
 .order-text {
     display: inline-block;
-    width: 63%;
-    margin-left: 10px;
+    width: 90%;
+    /*margin-left: 10px;*/
 }
 .order-text>h3 {
     font-size: 16px;
@@ -95,9 +109,14 @@ body {
     height: 25px;
     line-height: 25px;
     color: #666;
+    /*float: left;
+    display: block;*/
+    white-space:nowrap;
+    overflow: hidden;
+    text-align: left;
 }
 .order-operate{
-    margin-top: -7px;
+    margin-top: -36px;
 }
 .order-reject {
     margin-left: 10px;

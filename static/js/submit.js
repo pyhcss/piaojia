@@ -86,6 +86,8 @@ function setPersons(){
 }
 
 function getTrains(){
+    $("#train-btn").html("列车号");
+    $("#train-btn").css({"color":"#999"});
     $("#train_button").removeAttr("onclick");
     var from = $("#from").val();
     var to = $("#to").val();

@@ -17,12 +17,16 @@ function getCookie(name) {
 $(document).ready(function(){
     $('.modal').on('show.bs.modal', centerModals);      //当模态框出现的时候
     $(window).on('resize', centerModals);
-    $.get("/api/myorder?role=custom", function(data){
+    $.get("/api/myorder", function(data){
         if ("0" == data.errcode) {
             $(".orders-list").html(template("orders-list-tmpl", {orders:data.orders}));
             $(".order-comment").on("click", function(){
                 var orderId = $(this).parents("li").attr("order-id");
                 $(".modal-comment").attr("order-id", orderId);
+            });
+            $(".order-cancel").on("click",function(){
+                var orderId = $(this).parents("li").attr("order-id");
+                $(".modal-cancel").attr("order-id",orderId);
             });
             $(".modal-comment").on("click", function(){
                 var orderId = $(this).attr("order-id");
@@ -31,10 +35,9 @@ $(document).ready(function(){
                 var data = {
                     order_id:orderId,
                     comment:comment,
-                    commit:"comment"
                 };
                 $.ajax({
-                    url:"/api/order",
+                    url:"/api/commentorder",
                     type:"POST",
                     data:JSON.stringify(data),
                     contentType:"application/json",
@@ -46,13 +49,34 @@ $(document).ready(function(){
                         if ("4101" == data.errcode) {
                             location.href = "/login.html";
                         } else if ("0" == data.errcode) {
-                            $(".orders-list>li[order-id="+ orderId +"]>div.order-content>div.order-text>ul li:eq(4)>span").html("已完成");
-                            $(".order-operate").hide();
+                            $(".orders-list>li[order-id="+ orderId +"]>div.order-title>h4").html("已完成");
+                            $(".orders-list>li[order-id="+ orderId +"]>div.order-content>div.order-text>div.order-operate").hide();
                             $("#comment-modal").modal("hide");
+                        } else{
+                            location.href = "/orders.html";
                         }
                     }
                 });
             });
+            $(".modal-cancel").on("click",function(){
+                var orderId = $(this).attr("order-id");
+                $.get(
+                    "/api/cancelorder",
+                    {"order_id":orderId},
+                    function(data){
+                        if ("4101" == data.errcode) {
+                            location.href = "/login.html";
+                        } else if ("0" == data.errcode) {
+                            $(".orders-list>li[order-id="+ orderId +"]>div.order-title>h4").html("已取消");
+                            $(".orders-list>li[order-id="+ orderId +"]>div.order-content>div.order-text>div.order-operate").hide();
+                            $("#cancel-modal").modal("hide");
+                        } else{
+                            location.href = "/orders.html";
+                        }
+                    })
+            });
+        } else if("4101" == data.errcode){
+            location.href = "/login.html";
         }
     });
 });

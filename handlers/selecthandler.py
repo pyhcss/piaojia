@@ -4,7 +4,7 @@ import re
 import tornado.gen
 from libs.session import Session
 from basehandler import BaseHandler
-from libs.check_login import CheckLogin
+from libs.decorate import check_islogin
 from libs.query_info import QueryTrain,QueryPerson
 
 
@@ -35,31 +35,16 @@ class SelectTrainHandler(BaseHandler):
 
 class SelectPersonHandler(BaseHandler):
     """常用联系人信息"""
-    @tornado.gen.coroutine
-    def check_login(self):
-        """检查是否远程登录"""
-        session_data = self.get_current_user()          # 调用session
-        if not session_data:                            # 返回未登录信息
-            raise tornado.gen.Return({"errcode": "4101", "errmsg": "False"})
-        cookies = session_data["cookies"]               # 拿到缓存的cookie
-        check_login = CheckLogin(cookies)
-        resp = yield check_login.check_remote_login()   # 发送请求
-        if not resp:                                    # 确认远程端是否登录
-            raise tornado.gen.Return({"errcode": "4101", "errmsg": "False"})
-        raise tornado.gen.Return({"errcode":"0","errmsg":"True","session_data":session_data})
-
+    @check_islogin
     @tornado.gen.coroutine
     def get(self):
         """查询常用联系人信息"""
-        resp = yield self.check_login()                 # 查询远程端是否登录
-        if resp["errcode"] != "0":
-            raise tornado.gen.Return(self.write(resp))  # 没登录返回错误信息
-        user_id = resp["session_data"]["user_id"]       # 根据用户id查询数据库
-        persons = self.db.query("select pi_name from person_info where pi_user=%s",user_id)
+        session_data = self.get_current_user()
+        user_id = session_data["user_id"]               # 根据用户id查询数据库
+        persons = self.db.query("select pi_name as name from person_info where pi_user=%s",user_id)
         if persons:                                     # 如果有数据 直接格式化并返回数据
-            persons = [{"name":i["pi_name"]} for i in persons]
             raise tornado.gen.Return(self.write({"errcode":"0","errmsg":"常用联系人获取成功","persons":persons}))
-        cookies = resp["session_data"]["cookies"]       # 如果没有数据 取出cookie
+        cookies = session_data["cookies"]               # 如果没有数据 取出cookie
         query_person = QueryPerson(cookies)
         resp = yield query_person.get_persons()         # 调用接口查询数据
         if resp["errcode"] == "0":                      # 返回值正确时直接插入数据库
@@ -72,14 +57,13 @@ class SelectPersonHandler(BaseHandler):
         else:                                           # 返回错误信息
             raise tornado.gen.Return(self.write({"errcode":"4101","errmsg":"第三方系统错误"}))
 
+    @check_islogin
     @tornado.gen.coroutine
     def post(self):
         """更新常用联系人信息"""
-        resp = yield self.check_login()                 # 查询是否登录
-        if resp["errcode"] != "0":
-            raise tornado.gen.Return(self.write(resp))  # 返回错误信息
-        user_id = resp["session_data"]["user_id"]       # 从session拿到用户id和cookie
-        cookies = resp["session_data"]["cookies"]
+        session_data = self.get_current_user()
+        user_id = session_data["user_id"]               # 从session拿到用户id和cookie
+        cookies = session_data["cookies"]
         query_person = QueryPerson(cookies)
         resp = yield query_person.get_persons()         # 调用接口查询数据
         if resp["errcode"] == "0":                      # 从数据库获取已有常用联系人的信息
