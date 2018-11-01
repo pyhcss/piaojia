@@ -31,7 +31,6 @@ class OrderInfoHandler(BaseHandler):
         if not all((from_dict,to_dict)):                # 获取不到返回错误信息
             raise tornado.gen.Return(self.write({"errcode": "4103", "errmsg": "出发地或目的地错误"}))
         from_code = from_dict["ts_name_code"];to_code = to_dict["ts_name_code"]
-        # now_data = time.strftime('%Y-%m-%d',time.localtime(time.time()))
         session_data = self.get_current_user()
         user_id = session_data["user_id"]
         cookies = session_data["cookies"]
@@ -40,7 +39,7 @@ class OrderInfoHandler(BaseHandler):
                         "%s,%s,%s,%s,%s)",user_id,from_station,from_code,to_station,to_code,date,
                         trains,seats,persons,email)
         print order_id
-        order = {"id":order_id,"user_id":user_id,"from":from_station,"from_code":from_code,"to":to_station,"to_code":to_code,"data":date,"trains":trains,"seats":seats,"email":email,"cookies":cookies}
+        order = {"id":order_id,"user_id":user_id,"from":from_station,"from_code":from_code,"to":to_station,"to_code":to_code,"date":date,"trains":trains,"seats":seats,"persons":persons,"email":email,"cookies":cookies}
         order_info = json.dumps(order,ensure_ascii=False).encode("utf-8")
         self.redis.lpush("piaojia_new_order",order_info)
         raise tornado.gen.Return(self.write({"errcode":"0","errmsg":"订单提交成功"}))
@@ -104,6 +103,5 @@ class UpdateOrderHandler(BaseHandler):
             return self.write({"errcode": "4001", "errmsg": "系统错误"})
         if not order:
             return self.write({"errcode": "4105", "errmsg": "用户身份错误"})
-        self.db.execute("update order_info set oi_status=4 where id=%s",order["id"])
-        self.redis.lpush("piaojia_cancel_order",order["id"])
+        self.redis.lpush("piaojia_end_order",order["id"])
         return self.write({"errcode":"0","errmsg":"取消成功"})

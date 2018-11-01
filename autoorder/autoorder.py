@@ -1,105 +1,100 @@
 # coding=utf-8
 
+import time
+import json
 import redis
 import pymysql
-import urllib2
-import cookielib
 import threading
+from Queue import Queue
+from send_email import sendemail
+from orderthread import OrderThread
+
+THREAD_SWITCH_DICT = {}                    # 线程开关字典
 
 
-# 从redis读取需要执行的线程
-# 从redis读取需要取消的线程
-# 执行需要执行的线程 传递参数 储存线程开关 传递线程开关 传递返回值列表 传递返回值列表锁
-# 关闭需要取消的线程
-# 读取返回值列表 删除返回值线程的开关
-# 执行返回值相应操作
-# 返回值锁 设定成功或者失败id列表 [[id,True],[id:False]]
-# order = {
-# "id":order_id,
-# "user_id":user_id,
-# "from":from_station,
-# "from_code":from_code,
-# "to":to_station,
-# "to_code":to_code,
-# "data":date,
-# "trains":trains,
-# "seats":seats,
-# "email":email,
-# "cookies":cookies}
 class AutoOrder(object):
     """自动化下单主线程"""
     def __init__(self):
+        """初始化函数"""
+        global THREAD_SWITCH_DICT,THREAD_RETURN_DICT
         self.redis_cli = redis.StrictRedis()            # redis mysql数据库链接
         self.db_cli = pymysql.Connection(host="127.0.0.1", user="root",
-                                         password="",database="piaojia",
+                                         password="******",database="piaojia",
                                          port=3306,charset='utf8')
         self.cursor = self.db_cli.cursor()              # mysql游标
-        self.thread_switch_dict = {}                    # 线程开关字典
-        self.thread_return_list = []                    # 线程返回值列表
-        self.return_lock = threading.Lock()             # 返回值列表锁
+        self.thread_switch_dict = THREAD_SWITCH_DICT    # 开关字典
+        self.switch_lock = threading.Lock()             # 开关字典锁
+        self.return_queue = Queue()                     # 创建queue队列对象
 
     def start_thread(self):
         """读取需要开启的线程 传递参数开启线程"""
+        global THREAD_SWITCH_DICT
         while True:
             start_count = self.redis_cli.llen("piaojia_new_order")
             if start_count != 0:
-                pass
+                json_data = self.redis_cli.lpop("piaojia_new_order")
+                data = json.loads(json_data)
+                self.switch_lock.acquire()
+                self.thread_switch_dict[str(data["id"])] = True
+                self.switch_lock.release()
+                order_thread = OrderThread(self.thread_switch_dict,self.switch_lock,
+                                           self.return_queue,data)
+                order_thread.start()
+                self.cursor.execute("update order_info set oi_status=1 where id=%s",data["id"])
+                self.db_cli.commit()
+            else:
+                break
+
+    def end_thread(self):
+        """读取需要结束的线程、把开关设为False"""
+        while True:
+            end_count = self.redis_cli.llen("piaojia_end_order")
+            if end_count != 0:
+                order_id = self.redis_cli.lpop("piaojia_end_order")
+                self.switch_lock.acquire()
+                self.thread_switch_dict[str(order_id)] = False
+                self.switch_lock.release()
+            else:
+                break
+
+    def return_thread(self):
+        """读取返回值队列,根据返回值处理相应操作,删除开关,删除返回值列表的值"""
+        while True:
+            if not self.return_queue.empty():
+                data_dict = self.return_queue.get()
+                if data_dict["data"]:
+                    self.cursor.execute("update order_info set oi_status=2 where id=%s",data_dict["id"])
+                    self.db_cli.commit()
+                    resp = sendemail(data_dict["data"]["email"],data_dict["from"]+"-"+data_dict["to"])
+                    print resp
+                else:
+                    self.cursor.execute("update order_info set oi_status=4 where id=%s",data_dict["id"])
+                    self.db_cli.commit()
+                self.switch_lock.acquire()
+                del self.thread_switch_dict[str(data_dict["id"])]
+                self.switch_lock.release()
+            else:
+                break
 
     def main(self):
         """控制函数"""
-        self.start_thread()
+        try:
+            global THREAD_SWITCH_DICT
+            while True:
+                self.start_thread()
+                self.end_thread()
+                self.return_thread()
+                time.sleep(3)
+        except Exception as e:
+            print e
+        finally:
+            self.cursor.close()
+            self.db_cli.close()
 
 
 
 
-
-class OrderThread(threading.Thread):
-    """订单线程"""
-    def __init__(self,*args,**kwargs):
-        super(OrderThread,self).__init__(*args,**kwargs)
-
-
-    def run(self):
-        pass
-
-    def make_cookie(self,name,value):
-        return cookielib.Cookie(
-            version=None,
-            name=name,
-            value=value,
-            port=None,
-            port_specified=False,
-            domain="",
-            domain_specified=False,
-            domain_initial_dot=False,
-            path="/",
-            path_specified=False,
-            secure=False,
-            expires=None,
-            discard=False,
-            comment=None,
-            comment_url=None,
-            rest=None,
-        )
-
-
-cookie = cookielib.CookieJar()  # 构建cookiejar对象 用来保存cookie对象
-cookie.set_cookie(make_cookie("test_cookie","12345"))
-cookie_handler = urllib2.HTTPCookieProcessor(cookie)  # 构建自定义cookie处理器对象 用来处理cookie
-opener = urllib2.build_opener(cookie_handler)  # 构建opener
-handlers = {
-    "Cookie":"test_cookie=123456"
-}
-request = urllib2.Request("http://www.baidu.com",headers=handlers)
-for i in cookie:
-    print "----------------"
-    print i.name
-    print i.value
-    print "----------------"
-resp = opener.open(request)
-print resp.read()
-for i in cookie:
-    print "----------------"
-    print i.name
-    print i.value
-    print "----------------"
+if __name__ == "__main__":
+    auto_order = AutoOrder()
+    auto_order.main()
+    # auto_order.test()
