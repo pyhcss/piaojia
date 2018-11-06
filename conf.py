@@ -7,7 +7,7 @@ settings = {
     "debug":True,
     "xsrf_cookies":True,
     "static_path":os.path.join(os.path.dirname(__file__),"static"),
-    "cookie_secret":"2icZdSTxQdOkm1dnTv8oJrxlV/ZQQk1nnw+2Zp3+rkE=",
+    "cookie_secret":"",
 }
 
 # mysql配置

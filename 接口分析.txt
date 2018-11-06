@@ -1,0 +1,47 @@
+1 验证码接口
+url:    https://kyfw.12306.cn/passport/captcha/captcha-image64
+参数:    GET
+    login_site=E
+    module=login
+    rand=sjrand
+    1541223469031
+    callback=jQuery1910471916584868328_1541223098385
+    _=1541223098388
+返回值:
+    /**/jQuery1910471916584868328_1541223098385(
+    {"result_message":"生成验证码成功",
+    "result_code":"0",
+    "image":"/9j/jYs...oK"});           base64数据
+    需添加:"data:image/jpg;base64,"+image数据组成src的值
+    注意:此处重置 _passport_ct
+
+2 验证码校验接口
+url:    https://kyfw.12306.cn/passport/captcha/captcha-check
+参数:    GET
+    callback=jQuery1910471916584868328_1541223098385
+    answer=115%2C44
+    rand=sjrand
+    login_site=E
+    _=1541223098392
+返回值:
+    /**/jQuery1910471916584868328_1541223098385(
+    {"result_message":"验证码校验失败,信息为空",
+    "result_code":"8"});
+
+3 查票接口
+https://kyfw.12306.cn/otn/leftTicket/query
+参数:
+    leftTicketDTO.train_date=2018-11-03
+    leftTicketDTO.from_station=BJP
+    leftTicketDTO.to_station=HMV
+    purpose_codes=ADULT
+返回值:
+    {"data":
+        {"flag":"1",
+        "map":{"BJP":"北京","HMV":"侯马"},
+        "result":["upx3D%3D|预订|240000K6030O|K603|BJP|YNV|BJP|HMV|17:12
+                |08:22|15:10|Y|ujVkRLs%3D|20181103|3|PA|01|16|0|0||||8
+                |||有||有|有|||||10401030|1413|0",]},
+    "httpstatus":200,
+    "messages":"",
+    "status":true}

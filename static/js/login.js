@@ -8,11 +8,27 @@ function getRandom(n){
 }
 
 function getImage() {
-    $(".form-login img").attr({"src":"/api/imagecode?rand="+getRandom(100)});
+    $(".form-login img").attr({"onclick":"#"});
+    $.get("/api/imagecode?rand="+getRandom(100),
+        function (data) {
+            if(data.errcode == "0") {
+                $(".form-login img").attr({"src": "data:image/jpg;base64," + data.data});
+            }else{
+            }
+        });
+    $(".form-login img").attr({"onclick":"getImage();"});
     return;
 }
 
 $(document).ready(function() {
+    $.get("/api/imagecode?rand="+getRandom(100),
+        function (data) {
+            if(data.errcode == "0") {
+                $(".form-login img").attr({"src": "data:image/jpg;base64," + data.data});
+            }else{
+                location.href("/login.html");
+            }
+        });
     $("#mobile").focus(function(){
         $("#mobile-err").hide();
     });

@@ -7,7 +7,7 @@ from email.mime.text import MIMEText
 def sendemail(address,from_to):
     smtp_address = "smtp.163.com"
     from_mail = "newzn_admin@163.com"
-    from_pwd = "yunlong3637"
+    from_pwd = ""
     to_mail = address
 
     message = MIMEText("您好,欢迎使用票家,恭喜您抢到了"+from_to+"的火车票,请于30分钟内登录12306官网进行支付,谢谢使用","plain","utf-8")
@@ -25,5 +25,5 @@ def sendemail(address,from_to):
 
 
 if __name__ == "__main__":
-    res = sendemail("909576924@qq.com","北京－侯马")
+    res = sendemail("909576924@qq.com","北京－天津")
     print res

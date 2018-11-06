@@ -27,8 +27,4 @@ class BaseRequest(object):
         ]
         self.headers = {  # 创建报头信息
             "User-Agent": random.choice(user_agent),
-            "Host": "kyfw.12306.cn",
-            "Origin": "https://kyfw.12306.cn",
-            "Accept-Language": "zh-CN,zh;q=0.8",
-            "Connection": "keep-alive",
         }

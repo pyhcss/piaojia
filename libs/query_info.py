@@ -108,36 +108,3 @@ class QueryPerson(Base_Httpclient):
             data_list = resp_dict["data"]["datas"]          # 拿到常用联系人列表
             raise tornado.gen.Return({"errcode": "0", "errmsg": "常用联系人获取成功", "data": data_list})
         raise tornado.gen.Return({"errcode": "4301", "errmsg": "第三方系统错误"})
-
-
-# class QueryToken(Base_Httpclient):
-#     """获取全局token"""
-#     @tornado.gen.coroutine
-#     def get_token(self):
-#         """
-#         获取全局token
-#         return: {"errcode":"","errmsg":"","cookies":{},"token":"服务器值"}
-#         """
-#         url = "https://kyfw.12306.cn/otn/confirmPassenger/initDc"
-#         data = "_json_att="
-#         self.headers["Cookie"] = ";".join([i + "=" + self.cookies[i] for i in self.cookies])
-#         request = self.request(url, method="POST", headers=self.headers, body=data)
-#         a = 1
-#         while a <= 3:
-#             try:
-#                 resp = yield self.fetch(request)            # 发送请求 获取返回值
-#             except Exception as e:
-#                 a += 1
-#                 continue
-#             try:                                                # 获取token
-#                 token = re.search(r"globalRepeatSubmitToken = '(\w+)';", resp.body).group(1)
-#             except Exception as e:
-#                 a += 1
-#                 if a == 2:
-#                     time.sleep(1)
-#                 else:
-#                     time.sleep(2)
-#                 continue
-#             print resp.headers
-#             raise tornado.gen.Return({"errcode":"0","errmsg":"全局token获取成功","token":token,"cookies":self.cookies})
-#         raise tornado.gen.Return({"errcode":"4301","errmsg":"第三方系统错误"})
