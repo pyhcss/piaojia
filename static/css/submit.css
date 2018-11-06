@@ -1,0 +1,135 @@
+body {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: #fff;
+}
+.container {
+    padding-right: 5px;
+    padding-left: 5px;
+}
+.logo-bar {
+    width: 128px;
+    height: 59px;
+    margin: 10px auto;
+}
+.form-register {
+    max-width: 330px;
+    padding: 10px;
+    margin: 0 auto;
+}
+.input-group-addon {
+    background-color: #fff; 
+    color: #959ea7;
+    padding: 6px;
+}
+.input-group-addon, .form-control {
+    border: 1.5px solid #dcdbdb;
+}
+.fa-fw {
+    width: 30px;
+}
+.form-register .form-control {
+  position: relative;
+  height: auto;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+  padding: 10px;
+  font-size: 16px;
+}
+.form-register .form-control:focus {
+  z-index: 2;
+}
+.login-a {
+    text-align: right;
+    margin-top: 16px;
+    font-size: 14px;
+}
+.error-msg {
+    display: none;
+    font-size: 14px;
+    color: red;
+    margin: -10px 0px 10px 50px;
+}
+.error-msg i {
+    margin-right: 5px;
+}
+.new_style{
+    width:310px;
+}
+
+.filter-btn {
+    display: block;
+    width: 100%;
+    height: 44px;
+    background-color: #fff;
+    border: none;
+    color: #585858;
+    margin-bottom: 5px;
+    border-radius: 3px;
+    font-size: 16px;
+    padding: 0px 10px;
+}
+.modal-title {
+    font-size: 16px;
+}
+.modal-header, .modal-footer {
+    padding: 10px;
+}
+.modal-body {
+    padding: 0;
+}
+.train-list input {
+    width: auto;
+    height: 40px; 
+    margin: 0px 5px 0 10px;
+    font-size: 16px;
+}
+.train-list p {
+    font-size: 15px;
+}
+.person-list p,.seat-list p{
+    margin:10px 0px 10px 5px;
+    font-size: 16px;
+}
+.person-list input,.seat-list input{
+    margin:10px 0px 10px 10px;
+}
+.date-select {
+    font-size: 16px;
+}
+.datepicker-inline, .datepicker table {
+    width: 100% !important;
+}
+
+.top-bar {
+    margin: 0 auto;
+    width: 310px;
+    background-color: #eee;
+    z-index: 2;
+}
+.nav-bar {
+    width: 100%;
+    height: 35px; 
+    text-align: center;
+    position: relative;
+    border-bottom: 1px solid #eee;
+    background-color: #fff;
+}
+.page-title {
+    display: block;
+    line-height: 35px;
+    font-size: 20px;
+}
+.nav-btn {
+    position: absolute; 
+    top: 0;
+    left: 10px;
+    color: #000;
+    font-size: 16px;
+}
+.min_width {
+    display: inline-block;
+    margin:5px;
+    width:130px;
+}
