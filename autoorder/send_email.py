@@ -15,7 +15,7 @@ def sendemail(address,from_to):
     message["To"] = to_mail
     message["Subject"] = u"票家"
     try:
-        smtp_server = smtplib.SMTP(smtp_address,port=25)
+        smtp_server = smtplib.SMTP_SSL(smtp_address)
         smtp_server.login(from_mail,from_pwd)
         smtp_server.sendmail(from_mail,to_mail,message.as_string())
         return "发送成功"
@@ -25,5 +25,5 @@ def sendemail(address,from_to):
 
 
 if __name__ == "__main__":
-    res = sendemail("909576924@qq.com","北京－天津")
+    res = sendemail("","北京－天津")
     print res
