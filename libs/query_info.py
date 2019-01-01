@@ -31,7 +31,7 @@ class QueryTrain(Base_Httpclient):
         发送请求获取所有余票信息
         return: {"errcode":"0","errmsg":"","data":"{"map",{},"result":["列车详情1","列车详情2"]}
         """
-        url = "https://kyfw.12306.cn/otn/leftTicket/query?" # 构造url
+        url = "https://kyfw.12306.cn/otn/leftTicket/queryZ?" # 构造url
         data_list = [urllib.urlencode(i) for i in self.data]# 遍历数据组成参数列表
         url += "&".join(data_list)                          # 拼接url
         request = self.request(url,headers=self.headers)    # 构建请求对象

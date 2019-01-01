@@ -24,7 +24,7 @@ class GetTrain(BaseRequest):
 
     def query_all_trains(self):
         """发送请求获取所有的余票信息"""
-        url = "https://kyfw.12306.cn/otn/leftTicket/query?"     # 构造url
+        url = "https://kyfw.12306.cn/otn/leftTicket/queryZ?"     # 构造url
         data_list = [urllib.urlencode(i) for i in self.data]    # 遍历数据组成参数列表
         url += "&".join(data_list)                              # 拼接url
         request = self.request(url, headers=self.headers)       # 构建请求对象
@@ -49,7 +49,6 @@ class GetTrain(BaseRequest):
         return:  ["列车参数1","列车参数2","列车参数3"...] 详情在 接口分析.txt
         """
         seat_type_list = []                                     # 初始化需要提取的座位类型列表
-        print seattypes
         for i in seattypes:                                     # 遍历提交信息 转换为列表下标
             if i == u"特等座":
                 seat_type_list.append(-5)
