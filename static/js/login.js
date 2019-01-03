@@ -81,7 +81,7 @@ $(document).ready(function() {
                 else {
                     $("#imgcode-err span").html(data.errmsg);
                     $("#imgcode-err").show();
-                    $(".form-login img").attr({"src":"/api/imagecode?rand="+getRandom(100)});
+                    getImage();
                     return;
                 }
             }
