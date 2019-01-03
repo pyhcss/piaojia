@@ -18,10 +18,9 @@ class OrderThread(threading.Thread):
         self.data = data                                    # 数据
         self.cookie = cookielib.CookieJar()                 # 构建cookiejar对象 用来保存cookie对象
         for i in self.data["cookies"]:                      # 添加自定义cookie
-                self.cookie.set_cookie(self.make_cookie(i,self.data["cookies"][i]))
+            self.cookie.set_cookie(self.make_cookie(i,self.data["cookies"][i]))
         cookie_handler = urllib2.HTTPCookieProcessor(self.cookie)# 构建自定义cookie处理器对象 用来处理cookie
         self.opener = urllib2.build_opener(cookie_handler)  # 构建opener
-        self.setDaemon(True)                                # 主停子停
 
     def run(self):
         """订单线程执行函数"""
@@ -54,13 +53,13 @@ class OrderThread(threading.Thread):
                     resp_data = get_train.get_submit_data(self.data["trains"].split(","),self.data["seats"].split(","),
                                                            len(self.data["persons"].split(",")),resp["data"])
                     if resp_data["errcode"] != "0":
-                        time.sleep(2)
+                        time.sleep(1)
                         continue
                     else:                                   # 保存符合情况的车票及座位信息
                         train_data = resp_data["data"]
                         seat = resp_data["seat"]
                 else:
-                    time.sleep(2)
+                    time.sleep(1)
                     continue                                # 判断时间是否超限
                 now_time = time.strftime('%H:%M', time.localtime(time.time()))
                 if now_time <= "06:00" or now_time >= "22:45":# 不在时间范围时重新查票
@@ -75,37 +74,37 @@ class OrderThread(threading.Thread):
                                                             # 获取预定页面
                 resp = submit_order.destine(train_data[0],self.data["date"],self.data["from"],self.data["to"])
                 if resp != "0":
-                    time.sleep(2)
+                    time.sleep(1)
                     continue
                 token_key = submit_order.get_token()        # 获取全局token及key
                 if not token_key:
-                    time.sleep(2)
+                    time.sleep(1)
                     continue
                                                             # 获取常用联系人信息
                 person_list = submit_order.get_persons(self.data["persons"].split(","))
                 if not person_list:
-                    time.sleep(2)
+                    time.sleep(1)
                     continue
                                                             # 乘车人信息预提交
                 resp = submit_order.order_person_submit(seat,person_list,token_key)
                 if resp["errcode"] != "0":
-                    time.sleep(2)
+                    time.sleep(1)
                     continue
                 person_info = resp["data"]
                                                             # 订票车次提交
                 resp = submit_order.order_train_submit(self.data["date"],train_data,person_info,token_key)
                 if resp != "0":
-                    time.sleep(2)
+                    time.sleep(1)
                     continue
                                                             # 最终提交预定信息
                 resp = submit_order.order_submit(person_info,token_key,train_data)
                 if resp != "0":
-                    time.sleep(2)
+                    time.sleep(1)
                     continue
                                                             # 查询预定情况
                 resp = submit_order.query_submit(token_key)
                 if resp != "0":
-                    time.sleep(2)
+                    time.sleep(1)
                     continue
                                                             # 预定成功 添加数据到返回值队列
                 print "订单" + str(self.data["id"]) + "结束执行5-已抢到"

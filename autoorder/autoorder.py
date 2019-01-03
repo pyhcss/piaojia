@@ -37,7 +37,8 @@ class AutoOrder(object):
             self.switch_lock.release()              # 开启多线程
             order_thread = OrderThread(self.thread_switch_dict,self.switch_lock,
                                        self.return_queue,data)
-            order_thread.start()                    # 运行多线程
+            order_thread.setDaemon(True)            # 设置线程为伴随线程
+            order_thread.start()                    # 运行子线程
             self.cursor.execute("update order_info set oi_status=1 where id=%s",data["id"])
             self.db_cli.commit()                    # 更新订单状态为抢票中
 
@@ -76,6 +77,8 @@ class AutoOrder(object):
         except Exception as e:
             print e
         finally:
+            self.cursor.execute("update order_info set oi_status=4 where (oi_status=1 or oi_status=0)")
+            self.db_cli.commit()
             self.cursor.close()
             self.db_cli.close()
 
