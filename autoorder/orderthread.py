@@ -32,8 +32,11 @@ class OrderThread(threading.Thread):
             print "订单" + str(self.data["id"]) + "结束执行1-登录过期"
             return
         print "uamtk检测成功"
+        count = 0
         while True:
             try:
+                count+=1
+                print "订单"+str(self.data["id"])+"第"+str(count)+"次查询"
                 self.switch_lock.acquire()                  # 开关上锁
                 if not self.thread_switch_dict[str(self.data["id"])]:# 查询开关数据 是否取消
                     self.switch_lock.release()              # 开关解锁

@@ -32,11 +32,11 @@ class CheckLogin(Base_Httpclient):
         while True:
             try:
                 resp = yield self.fetch(request)                # 发送请求 获取json数据
+                data = json.loads(resp.body)                            # 解析json数据
             except Exception as e:
                 continue
             else:
                 break
-        data = json.loads(resp.body)                            # 解析json数据
         if data["result_code"] == 0:                            # 如果返回值为0校验成功
             self.cookies["uamtk"] = data["uamtk"]
             del self.cookies["_passport_ct"]
@@ -126,38 +126,22 @@ class CheckLogin(Base_Httpclient):
         判断远程12306端是否登录
         return True or False
         """
-        # url = "https://kyfw.12306.cn/otn/login/checkUser"       # 创建url
-        # data = "_json_att="                                     # 创建请求头信息
-        # self.headers["Cookie"] = ";".join([i + "=" + self.cookies[i] for i in self.cookies])
-        # print self.headers["Cookie"]
-        # request = self.request(url,method="POST",headers=self.headers,body=data)
-        # a = 1
-        # while a <= 3:
-        #     try:
-        #         resp = yield self.fetch(request)                # 发送请求 获取返回值
-        #         data = json.loads(resp.body)                        # 解析数据
-        #         if not data["data"]["flag"]:                        # 判断是否登陆成功
-        #             print resp.body
-        #             a += 1
-        #             time.sleep(1)
-        #             continue
-        #         else:
-        #             raise tornado.gen.Return(True)
-        #     except Exception as e:
-        #         a += 1
-        #         continue
-        # print "预定验证登录失败"
-        # raise tornado.gen.Return(False)
         url = "https://kyfw.12306.cn/otn/uamauthclient"  # 创建url
         data = "tk=" + tk  # 参数
         self.headers["Cookie"] = ";".join([i + "=" + self.cookies[i] for i in self.cookies])
         request = self.request(url, method="POST",body=data, headers=self.headers)
+        a = 1
         while True:
             try:
                 resp = yield self.fetch(request)  # 发送请求获取响应
             except Exception as e:
                 print e
-                continue
+                a += 1
+                if a <= 3:
+                    continue
+                else:
+                    print "预定验证登录失败"
+                    raise tornado.gen.Return(False)
             data = json.loads(resp.body)  # 解析json数据
             if data["result_code"] == 0:
                 print "预定验证登录成功"
