@@ -113,7 +113,8 @@ class SubmitOrder(BaseRequest):
         """
         url = "https://kyfw.12306.cn/otn/confirmPassenger/initDc"
         data = "_json_att="
-        request = self.request(url,data=data,headers=self.headers)
+        request = self.request(url,method="POST",data=data,headers=self.headers)
+        print self.headers
         a = 1
         while True:
             resp = self.opener.open(request).read()         # 发送请求 获取响应
@@ -133,14 +134,14 @@ class SubmitOrder(BaseRequest):
             print "已获取到全局token及key"
             return data
 
-    def get_persons(self,persons):
+    def get_persons(self,persons,token):
         """
         获取常用联系人
         person: [乘车人姓名1,乘车人姓名2]
         return [{乘车人1},{乘车人2}]
         """
         url = "https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs"
-        data = "_json_att="
+        data = "_json_att=&REPEAT_SUBMIT_TOKEN="+token
         request = self.request(url,data=data,headers=self.headers)
         a = 1
         while True:
