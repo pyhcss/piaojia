@@ -113,8 +113,7 @@ class SubmitOrder(BaseRequest):
         """
         url = "https://kyfw.12306.cn/otn/confirmPassenger/initDc"
         data = "_json_att="
-        request = self.request(url,method="POST",data=data,headers=self.headers)
-        print self.headers
+        request = self.request(url,data=data,headers=self.headers)
         a = 1
         while True:
             resp = self.opener.open(request).read()         # 发送请求 获取响应
@@ -303,7 +302,7 @@ class SubmitOrder(BaseRequest):
             "REPEAT_SUBMIT_TOKEN":token_key["token"]       # 全局token
         }
         request = self.request(url,data=urllib.urlencode(data),headers=self.headers)
-        a = 1
+        a,b = 1,1
         while True:
             try:
                 resp = self.opener.open(request).read()
@@ -314,8 +313,12 @@ class SubmitOrder(BaseRequest):
                     time.sleep(1)
                     continue
             if not data["submitStatus"]:                   # 判断提交情况
-                print resp
-                return "submit error"
+                b+=1
+                if b<=3:
+                    continue
+                else:
+                    print resp
+                    return "submit error"
             return "0"
 
     def query_submit(self,token_key):
