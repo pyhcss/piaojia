@@ -24,7 +24,7 @@ def check_islogin(fun):
             raise tornado.gen.Return(self.write({"errcode": "4101", "errmsg": "False"}))
         cookies = session_data["cookies"]                   # 拿到缓存的cookie
         check_login = CheckLogin(cookies)
-        resp = yield check_login.check_remote_login()       # 发送请求
+        resp = yield check_login.check_remote_login(session_data["cookies"]["tk"])       # 发送请求
         if not resp:                                        # 确认远程端是否登录
             raise tornado.gen.Return(self.write({"errcode": "4101", "errmsg": "False"}))
         yield fun(self,*args,**kwargs)

@@ -81,7 +81,7 @@ class OrderThread(threading.Thread):
                     time.sleep(1)
                     continue
                                                             # 获取常用联系人信息
-                person_list = submit_order.get_persons(self.data["persons"].split(","))
+                person_list = submit_order.get_persons(self.data["persons"].split(","),token_key["token"])
                 if not person_list:
                     time.sleep(1)
                     continue
