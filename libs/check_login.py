@@ -130,19 +130,19 @@ class CheckLogin(Base_Httpclient):
         data = "tk=" + tk  # 参数
         self.headers["Cookie"] = ";".join([i + "=" + self.cookies[i] for i in self.cookies])
         request = self.request(url, method="POST",body=data, headers=self.headers)
-        a = 1
+        count = 0
         while True:
             try:
                 resp = yield self.fetch(request)  # 发送请求获取响应
+                data = json.loads(resp.body)  # 解析json数据
             except Exception as e:
                 print e
-                a += 1
-                if a <= 3:
+                count += 1
+                if count <= 3:
                     continue
                 else:
                     print "预定验证登录失败"
                     raise tornado.gen.Return(False)
-            data = json.loads(resp.body)  # 解析json数据
             if data["result_code"] == 0:
                 print "预定验证登录成功"
                 raise tornado.gen.Return(True) # 返回执行结果

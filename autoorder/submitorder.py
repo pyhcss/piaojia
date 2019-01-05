@@ -23,15 +23,22 @@ class SubmitOrder(BaseRequest):
         url = "https://kyfw.12306.cn/otn/uamauthclient"     # 创建url
         data = "tk="+tk                                     # 参数
         request = self.request(url,data=data,headers=self.headers)
+        count = 0
         while True:
             try:
                 resp = self.opener.open(request).read()     # 发送请求获取响应
+                data = json.loads(resp)                         # 解析json数据
             except Exception as e:
-                continue
-            data = json.loads(resp)                         # 解析json数据
+                count += 1
+                if count <= 3:
+                    continue
+                else:
+                    print "tk校验失败"
+                    return "uamtk login error"
             if data["result_code"] == 0:
                 return "0"                                  # 返回执行结果
             else:
+                print data
                 return "uamtk login error"
 
     def checklogin(self):
@@ -42,23 +49,21 @@ class SubmitOrder(BaseRequest):
         url = "https://kyfw.12306.cn/otn/login/checkUser"
         data = "_json_att="                                 # 构建请求对象
         request = self.request(url,headers=self.headers,data=data)
-        a = 1
+        count = 0
         while True:
             try:
                 resp = self.opener.open(request).read()     # 发送请求 获取返回值
+                data = json.loads(resp)                         # 解析数据
             except Exception as e:
-                if a <= 3:
-                    time.sleep(1)
-                    a += 1
+                count += 1
+                if count <= 3:
                     continue
                 else:
                     print "预定验证登录失败"
                     return "check login error"
-            data = json.loads(resp)                         # 解析数据
             if not data["data"]["flag"]:                    # 判断是否登陆成功
-                if a <= 3:
-                    time.sleep(1)
-                    a += 1
+                count += 1
+                if count <= 3:
                     continue
                 else:
                     print "预定验证登录失败"
@@ -80,26 +85,23 @@ class SubmitOrder(BaseRequest):
         # 拼接查询数据
         data = "secretStr="+sercret+"&train_date="+date+"&back_train_date="+datetime.datetime.now().strftime("%Y-%m-%d")+"&tour_flag=dc&purpose_codes=ADULT&query_from_station_name="+from_name+"&query_to_station_name="+to_name+"&undefined"
         request = self.request(url,data=data.encode("utf-8"),headers=self.headers)
-        a = 1
+        count = 0
         while True:
             try:
                 resp = self.opener.open(request).read()     # 发送请求获取响应
+                data = json.loads(resp)                         # 解析json数据
             except Exception as e:
-                if a <= 3:
-                    print e
-                    a += 1
+                count += 1
+                if count <= 3:
                     continue
                 else:
                     print "获取预定页面失败"
                     return "destine error"
-            data = json.loads(resp)                         # 解析json数据
             if not data["status"]:                          # 检查是否获取成功
-                if a <= 3:
-                    time.sleep(1)
-                    a += 1
+                count += 1
+                if count <= 3:
                     continue
                 else:
-                    print data
                     print "获取预定页面失败"
                     return "destine error"
             else:
@@ -114,17 +116,16 @@ class SubmitOrder(BaseRequest):
         url = "https://kyfw.12306.cn/otn/confirmPassenger/initDc"
         data = "_json_att="
         request = self.request(url,data=data,headers=self.headers)
-        a = 1
+        count = 0
         while True:
-            resp = self.opener.open(request).read()         # 发送请求 获取响应
             data = {}
             try:                                            # 获取token及key
+                resp = self.opener.open(request).read()         # 发送请求 获取响应
                 data["key"] = re.search(r"'key_check_isChange':'(\w+)'",resp).group(1)
                 data["token"] = re.search(r"globalRepeatSubmitToken = '(\w+)'",resp).group(1)
             except Exception as e:
-                if a <= 3:
-                    time.sleep(1)
-                    a += 1
+                count += 1
+                if count <= 3:
                     continue
                 else:
                     print resp
@@ -142,16 +143,26 @@ class SubmitOrder(BaseRequest):
         url = "https://kyfw.12306.cn/otn/confirmPassenger/getPassengerDTOs"
         data = "_json_att=&REPEAT_SUBMIT_TOKEN="+token
         request = self.request(url,data=data,headers=self.headers)
-        a = 1
+        count = 0
         while True:
-            resp = self.opener.open(request).read()         # 发送请求 获取响应
-            resp = json.loads(resp)                         # 解析json数据
+            try:
+                resp = self.opener.open(request).read()         # 发送请求 获取响应
+                resp = json.loads(resp)                         # 解析json数据
+            except Exception as e:
+                count += 1
+                if count <=3:
+                    continue
+                else:
+                    print "常用联系人信息获取失败"
+                    return False
             data = resp["data"]["normal_passengers"]        # 拿到常用联系人列表
             person_list = []
             if not data:
-                if a <= 3:
+                count += 1
+                if count <= 3:
                     continue
                 else:
+                    print "常用联系人信息获取失败"
                     return False
             for x in persons:                               # 查找乘车人信息
                 for i in data:                              # 返回乘车人数据
@@ -170,16 +181,16 @@ class SubmitOrder(BaseRequest):
         """
         url = "https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo"
         if seattype == -5:                                 # 判断选择的坐席
-            seat = "9"
+            seat = "p"
         elif seattype == -6:
             seat = "M"
         elif seattype == -7:
             seat = "O"
         elif seattype == -14:
             seat = "4"
-        elif seattype == -9:
+        elif seattype == -10:
             seat = "3"
-        elif seattype == -8:
+        elif seattype == -9:
             seat = "1"
         else:
             seat = "O"
@@ -199,12 +210,21 @@ class SubmitOrder(BaseRequest):
             "REPEAT_SUBMIT_TOKEN":token_key["token"],      # 全局token
         }                                                  # 发送请求获取返回值
         request = self.request(url,data=urllib.urlencode(data),headers=self.headers)
-        a = 1
+        count = 0
         while True:
-            resp = self.opener.open(request).read()
-            data = json.loads(resp)["data"]                # 解析数据
+            try:
+                resp = self.opener.open(request).read()
+                data = json.loads(resp)["data"]                # 解析数据
+            except Exception as e:
+                count += 1
+                if count<=3:
+                    continue
+                else:
+                    print "乘车人信息获取失败"
+                    return {"errcode":"4301","errmsg":"submit person error"}# 判断是否可以选座
             if not data["submitStatus"]:                   # 判断提交状态
-                if a <= 3:
+                count += 1
+                if count <= 3:
                     continue
                 else:
                     print resp
@@ -237,24 +257,25 @@ class SubmitOrder(BaseRequest):
             "REPEAT_SUBMIT_TOKEN":token_key["token"]       # 全局token
         }                                                  # 发送请求拿到响应
         request = self.request(url,data=urllib.urlencode(data),headers=self.headers)
-        a = 1
+        count = 0
         while True:
             try:
                 resp = self.opener.open(request).read()
                 data = json.loads(resp)["data"]            # 解析数据
             except Exception as e:
-                if a <= 3:
-                    a += 1
-                    time.sleep(1)
+                count += 1
+                if count <= 3:
                     continue
                 else:
+                    print "订单车次提交失败"
                     return "train submit error"
             count = data["ticket"].split(",")              # 切割余票数量
-            print resp
             if count[0] == "0" or count[0] == "":          # 判断座位是否为空
+                print "订单车次提交失败"
                 print resp
                 return "count error"
             elif not data["op_1"]:                         # 判断提交情况
+                print "订单车次提交失败"
                 print resp
                 return "train error"
             # if len(count) == 2:
@@ -302,19 +323,21 @@ class SubmitOrder(BaseRequest):
             "REPEAT_SUBMIT_TOKEN":token_key["token"]       # 全局token
         }
         request = self.request(url,data=urllib.urlencode(data),headers=self.headers)
-        a,b = 1,1
+        count = 0
         while True:
             try:
                 resp = self.opener.open(request).read()
                 data = json.loads(resp)["data"]            # 解析数据
             except Exception as e:
-                if a <= 3:
-                    a += 1
-                    time.sleep(1)
+                count += 1
+                if count <= 3:
                     continue
+                else:
+                    print "终极提交订单失败"
+                    return "submit error"
             if not data["submitStatus"]:                   # 判断提交情况
-                b+=1
-                if b<=3:
+                count += 1
+                if count<=3:
                     continue
                 else:
                     print resp
@@ -327,7 +350,7 @@ class SubmitOrder(BaseRequest):
         token_key: {"token":服务器值,"key":服务器值}
         return: "0" 预定成功或者失败
         """
-        a = 1
+        count = 0
         while True:
             url = "https://kyfw.12306.cn/otn/confirmPassenger/queryOrderWaitTime?"
             url += "random="+str(int(time.time()*1000))+"&tourFlag=dc&_json_att=&REPEAT_SUBMIT_TOKEN="+token_key["token"]
@@ -336,9 +359,8 @@ class SubmitOrder(BaseRequest):
                 resp = self.opener.open(request).read()   # 发送请求获取响应
                 data = json.loads(resp)["data"]           # 解析数据
             except Exception as e:
-                if a <= 3:
-                    a += 1
-                    time.sleep(1)
+                count += 1
+                if count <= 3:
                     continue
                 else:
                     return "orderid error"

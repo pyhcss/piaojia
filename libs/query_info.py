@@ -35,20 +35,25 @@ class QueryTrain(Base_Httpclient):
         data_list = [urllib.urlencode(i) for i in self.data]# 遍历数据组成参数列表
         url += "&".join(data_list)                          # 拼接url
         request = self.request(url,headers=self.headers)    # 构建请求对象
+        count = 0
         while True:
             try:
                 resp = yield self.fetch(request)            # 发送请求 获取返回值
+                data_dict = json.loads(resp.body)       # 解析json对象
             except Exception as e:
-                continue
-            else:
-                try:                                        # 服务器可能返回错误页面
-                    data_dict = json.loads(resp.body)       # 解析json对象
-                except Exception as e:
-                    raise tornado.gen.Return({"errcode":"4301","errmsg":"第三方错误，请稍后重试"})
-                if data_dict["httpstatus"] == 200:          # 正常状态返回码
-                    raise tornado.gen.Return({"errcode":"0","errmsg":"列车信息获取成功","data":data_dict["data"]})# 返回数据
-                else:                                       # 出错后重新执行
+                count += 1
+                if count <=3:
                     continue
+                else:
+                    raise tornado.gen.Return({"errcode":"4301","errmsg":"第三方错误，请稍后重试"})
+            if data_dict["httpstatus"] == 200:          # 正常状态返回码
+                raise tornado.gen.Return({"errcode":"0","errmsg":"列车信息获取成功","data":data_dict["data"]})# 返回数据
+            else:                                       # 出错后重新执行
+                count += 1
+                if count <= 3:
+                    continue
+                else:
+                    raise tornado.gen.Return({"errcode":"4301","errmsg":"第三方错误，请稍后重试"})
 
     @tornado.gen.coroutine
     def get_submit_data(self):
@@ -82,29 +87,23 @@ class QueryPerson(Base_Httpclient):
         data = "pageIndex=1&pageSize=20"
         self.headers["Cookie"] = ";".join([i + "=" + self.cookies[i] for i in self.cookies])
         request = self.request(url, method="POST", headers=self.headers, body=data)
-        a = 1
-        while a <= 3:
+        count = 0
+        while True:
             try:
                 resp = yield self.fetch(request)            # 发送请求 获取返回值
-            except Exception as e:
-                a += 1
-                continue
-            try:
                 resp_dict = json.loads(resp.body)           # 解析json数据
             except Exception as e:
-                a += 1
-                if a == 2:
-                    time.sleep(1)
+                count += 1
+                if count <=3:
+                    continue
                 else:
-                    time.sleep(2)
-                continue
+                    raise tornado.gen.Return({"errcode": "4301", "errmsg": "第三方系统错误"})
             if resp_dict["httpstatus"] != 200:
-                a += 1
-                if a == 2:
-                    time.sleep(1)
+                count += 1
+                if count <= 3:
+                    continue
                 else:
-                    time.sleep(2)
-                continue
-            data_list = resp_dict["data"]["datas"]          # 拿到常用联系人列表
-            raise tornado.gen.Return({"errcode": "0", "errmsg": "常用联系人获取成功", "data": data_list})
-        raise tornado.gen.Return({"errcode": "4301", "errmsg": "第三方系统错误"})
+                    raise tornado.gen.Return({"errcode": "4301", "errmsg": "第三方系统错误"})
+            else:
+                data_list = resp_dict["data"]["datas"]          # 拿到常用联系人列表
+                raise tornado.gen.Return({"errcode": "0", "errmsg": "常用联系人获取成功", "data": data_list})

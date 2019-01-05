@@ -28,12 +28,17 @@ class GetTrain(BaseRequest):
         data_list = [urllib.urlencode(i) for i in self.data]    # 遍历数据组成参数列表
         url += "&".join(data_list)                              # 拼接url
         request = self.request(url, headers=self.headers)       # 构建请求对象
+        count = 0
         while True:
             try:
                 resp = self.opener.open(request).read()         # 发送请求 获取返回值
                 data_dict = json.loads(resp)                    # 解析json对象
             except Exception as e:
-                continue
+                count += 1
+                if count <=3:
+                    continue
+                else:
+                    return {"errcode":"404","errmsg":"列车信息获取失败"}
             if data_dict["httpstatus"] == 200:                  # 正常状态返回码
                 return {"errcode": "0", "errmsg": "列车信息获取成功", "data": data_dict["data"]}  # 返回数据
             else:                                               # 出错后重新执行
@@ -59,9 +64,9 @@ class GetTrain(BaseRequest):
             elif i == u"软卧":
                 seat_type_list.append(-14)
             elif i == u"硬卧":
-                seat_type_list.append(-9)
+                seat_type_list.append(-10)
             elif i == u"硬座":
-                seat_type_list.append(-8)
+                seat_type_list.append(-9)
         for i in trains_code:
             for x in data["result"]:                            # 遍历返回值信息
                 data_list = x.split("|")
@@ -69,11 +74,15 @@ class GetTrain(BaseRequest):
                     for y in seat_type_list:                    # 查看余票数据
                         if data_list[y] != u"无" and data_list[y] != "0" and data_list[y] != "":
                             if data_list[y] == u"有":           # 判断余票多的情况
+                                print data_list
+                                print data_list[y]
                                 print "已获取到相关列车数据"
                                 return {"errcode":"0","errmsg":"列车数据获取成功","data":data_list,"seat":y}  # 返回数据
                             try:                                # 判断余票大于人数的情况
                                 if int(data_list[y]) >= person_count:
                                     print "已获取到相关列车数据"
+                                    print data_list
+                                    print data_list[y]
                                     return {"errcode":"0","errmsg":"列车数据获取成功","data":data_list,"seat":y}
                             except Exception as e:
                                 pass
