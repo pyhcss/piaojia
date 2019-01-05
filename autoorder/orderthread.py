@@ -62,10 +62,9 @@ class OrderThread(threading.Thread):
                         train_data = resp_data["data"]
                         seat = resp_data["seat"]
                 else:
-                    time.sleep(1)
                     continue                                # 判断时间是否超限
                 now_time = time.strftime('%H:%M', time.localtime(time.time()))
-                if now_time <= "06:00" or now_time >= "22:45":# 不在时间范围时重新查票
+                if now_time <= "06:00" or now_time >= "22:58":# 不在时间范围时重新查票
                     time.sleep(30)
                     continue
                                                             # 创建提交订单的对象
@@ -77,37 +76,30 @@ class OrderThread(threading.Thread):
                                                             # 获取预定页面
                 resp = submit_order.destine(train_data[0],self.data["date"],self.data["from"],self.data["to"])
                 if resp != "0":
-                    time.sleep(1)
                     continue
                 token_key = submit_order.get_token()        # 获取全局token及key
                 if not token_key:
-                    time.sleep(1)
                     continue
                                                             # 获取常用联系人信息
                 person_list = submit_order.get_persons(self.data["persons"].split(","),token_key["token"])
                 if not person_list:
-                    time.sleep(1)
                     continue
                                                             # 乘车人信息预提交
                 resp = submit_order.order_person_submit(seat,person_list,token_key)
                 if resp["errcode"] != "0":
-                    time.sleep(1)
                     continue
                 person_info = resp["data"]
                                                             # 订票车次提交
                 resp = submit_order.order_train_submit(self.data["date"],train_data,person_info,token_key)
                 if resp != "0":
-                    time.sleep(1)
                     continue
                                                             # 最终提交预定信息
                 resp = submit_order.order_submit(person_info,token_key,train_data)
                 if resp != "0":
-                    time.sleep(1)
                     continue
                                                             # 查询预定情况
                 resp = submit_order.query_submit(token_key)
                 if resp != "0":
-                    time.sleep(1)
                     continue
                                                             # 预定成功 添加数据到返回值队列
                 print "订单" + str(self.data["id"]) + "结束执行5-已抢到"

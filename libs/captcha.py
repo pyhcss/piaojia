@@ -96,6 +96,8 @@ class Captcha(Base_Httpclient):
         while True:
             try:
                 resp = yield self.fetch(request)            # 发送请求拿到响应
+                json_data = re.search(r".*?(\{.*\})\);", resp.body).group(1)
+                data = json.loads(json_data)                        # 解析数据
             except Exception as e:
                 continue
             else:
@@ -104,8 +106,6 @@ class Captcha(Base_Httpclient):
             self.cookies = self.format_cookies(resp.headers["Set-Cookie"],self.cookies)
         except Exception as e:
             pass                                            # 提取数据
-        json_data = re.search(r".*?(\{.*\})\);", resp.body).group(1)
-        data = json.loads(json_data)                        # 解析数据
         if data["result_code"] != "4":
             print resp.body                                 # 返回校验失败
             raise tornado.gen.Return({"errcode":"4103","errmsg":"验证码校验失败","cookies":self.cookies})
