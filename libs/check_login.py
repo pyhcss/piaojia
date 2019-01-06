@@ -19,7 +19,7 @@ class CheckLogin(Base_Httpclient):
         """
         url = "https://kyfw.12306.cn/passport/web/login"
         text = self.cookies["captcha_text"]
-        del self.cookies["captcha_text"];del self.cookies["callback"]
+        del self.cookies["captcha_text"]
         data = {                                                # 创建数据内容
             "username":user,                                    # 账户名
             "password":pwd,                                     # 密码
@@ -28,7 +28,7 @@ class CheckLogin(Base_Httpclient):
         }                                                       # 设置自定义报头
         headers = self.headers
         headers["Cookie"] = ";".join([i+"="+self.cookies[i] for i in self.cookies])
-        request = self.request(url,method="POST",headers=headers,body=urllib.urlencode(data))
+        request = self.request(url,method="POST",headers=headers,body=urllib.urlencode(data),request_timeout=5)
         while True:
             try:
                 resp = yield self.fetch(request)                # 发送请求 获取json数据
