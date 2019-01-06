@@ -28,3 +28,11 @@ class BaseRequest(object):
         self.headers = {  # 创建报头信息
             "User-Agent": random.choice(user_agent),
         }
+
+    def getOpener(self):
+        """获取发送请求的对象"""
+        return self.opener
+
+    def setOpener(self, opener):
+        """设置发送请求的对象"""
+        self.opener = opener

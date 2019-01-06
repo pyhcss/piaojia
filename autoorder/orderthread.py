@@ -4,6 +4,7 @@ import time
 import urllib2
 import threading
 import cookielib
+from relogin import Relogin
 from querytrains import GetTrain
 from submitorder import SubmitOrder
 
@@ -69,10 +70,15 @@ class OrderThread(threading.Thread):
                     continue
                                                             # 创建提交订单的对象
                 resp = submit_order.checklogin()            # 检查是否登录
-                if resp != "0":                             # 登录过期返回
-                    self.return_queue.put({"id": self.data["id"], "data": False})
-                    print "订单" + str(self.data["id"]) + "结束执行4-登录过期"
-                    return
+                if resp != "0":
+                    relogin = Relogin(submit_order.getOpener())# 启动重新登录
+                    resp = relogin.main()
+                    if resp != "0":                         # 判断返回值 成功则继续 失败则退出
+                        self.return_queue.put({"id": self.data["id"], "data": False})
+                        print "订单" + str(self.data["id"]) + "结束执行4-登录过期"
+                        return
+                    else:
+                        submit_order.setOpener(relogin.getOpener())
                                                             # 获取预定页面
                 resp = submit_order.destine(train_data[0],self.data["date"],self.data["from"],self.data["to"])
                 if resp != "0":

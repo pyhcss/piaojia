@@ -34,7 +34,7 @@ class QueryTrain(Base_Httpclient):
         url = "https://kyfw.12306.cn/otn/leftTicket/queryZ?" # 构造url
         data_list = [urllib.urlencode(i) for i in self.data]# 遍历数据组成参数列表
         url += "&".join(data_list)                          # 拼接url
-        request = self.request(url,headers=self.headers)    # 构建请求对象
+        request = self.request(url,headers=self.headers,request_timeout=5)    # 构建请求对象
         count = 0
         while True:
             try:
@@ -86,7 +86,7 @@ class QueryPerson(Base_Httpclient):
         url = "https://kyfw.12306.cn/otn/passengers/query"
         data = "pageIndex=1&pageSize=20"
         self.headers["Cookie"] = ";".join([i + "=" + self.cookies[i] for i in self.cookies])
-        request = self.request(url, method="POST", headers=self.headers, body=data)
+        request = self.request(url, method="POST", headers=self.headers, body=data,request_timeout=5)
         count = 0
         while True:
             try:

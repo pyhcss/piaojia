@@ -31,7 +31,7 @@ class GetTrain(BaseRequest):
         count = 0
         while True:
             try:
-                resp = self.opener.open(request).read()         # 发送请求 获取返回值
+                resp = self.opener.open(request,timeout=5).read()         # 发送请求 获取返回值
                 data_dict = json.loads(resp)                    # 解析json对象
             except Exception as e:
                 count += 1

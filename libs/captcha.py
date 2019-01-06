@@ -55,16 +55,15 @@ class Captcha(Base_Httpclient):
         url = "https://kyfw.12306.cn/passport/captcha/captcha-image64?login_site=E&module=login&rand=sjrand&"+str(time.time())+"&callback=jQuery1910471916584"+str(random.randint(0,999999)).zfill(6)+"_"+str(time.time())+"&_="+str(time.time())
         if self.cookies:
             self.headers["Cookie"] = ";".join([i + "=" + self.cookies[i] for i in self.cookies])
-        request = self.request(url,headers=self.headers)    # 构建请求对象
+        request = self.request(url,headers=self.headers,request_timeout=3)    # 构建请求对象
         while True:
             try:
                 resp = yield self.fetch(request)            # 发送请求拿到响应
+                json_data = re.search(r".*?(\{.*\})\);",resp.body).group(1)
+                callback = re.search(r"\/\*\*\/(.*?)\(.*\);",resp.body).group(1)
+                data = json.loads(json_data)                    # 解析数据
             except Exception as e:
-                time.sleep(1)
                 continue                                    # 提取返回数据
-            json_data = re.search(r".*?(\{.*\})\);",resp.body).group(1)
-            callback = re.search(r"\/\*\*\/(.*?)\(.*\);",resp.body).group(1)
-            data = json.loads(json_data)                    # 解析数据
             if data["result_code"] != "0":
                 continue                                    # 拿到图片数据
             else:
@@ -92,16 +91,13 @@ class Captcha(Base_Httpclient):
         self.headers["Accept"] = "application/json, text/javascript, */*; q=0.01"
         self.headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
         self.headers["X-Requested-With"] = "XMLHttpRequest"
-        request = self.request(url,headers=self.headers)
-        while True:
-            try:
-                resp = yield self.fetch(request)            # 发送请求拿到响应
-                json_data = re.search(r".*?(\{.*\})\);", resp.body).group(1)
-                data = json.loads(json_data)                        # 解析数据
-            except Exception as e:
-                continue
-            else:
-                break
+        request = self.request(url,headers=self.headers,request_timeout=5)
+        try:
+            resp = yield self.fetch(request)            # 发送请求拿到响应
+            json_data = re.search(r".*?(\{.*\})\);", resp.body).group(1)
+            data = json.loads(json_data)                        # 解析数据
+        except Exception as e:
+            raise tornado.gen.Return({"errcode":"4103","errmsg":"验证码校验失败","cookies":self.cookies})
         try:                                                # 处理cookie
             self.cookies = self.format_cookies(resp.headers["Set-Cookie"],self.cookies)
         except Exception as e:
