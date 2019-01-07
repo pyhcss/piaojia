@@ -3,11 +3,11 @@
 import time
 import json
 import redis
-import pymysql
 import threading
 from Queue import Queue
 from send_email import sendemail
 from orderthread import OrderThread
+from automysql import AutoMySql
 
 THREAD_SWITCH_DICT = {}                                 # 线程开关字典
 
@@ -18,13 +18,11 @@ class AutoOrder(object):
         """初始化函数"""
         global THREAD_SWITCH_DICT
         self.redis_cli = redis.StrictRedis()            # redis mysql数据库链接
-        self.db_cli = pymysql.Connection(host="127.0.0.1", user="root",
-                                         password="",database="piaojia",
-                                         port=3306,charset='utf8')
-        self.cursor = self.db_cli.cursor()              # mysql游标
         self.thread_switch_dict = THREAD_SWITCH_DICT    # 开关字典
         self.switch_lock = threading.Lock()             # 开关字典锁
         self.return_queue = Queue()                     # 创建queue队列对象
+        self.automysql = AutoMySql()                    # 初始化自定义sql类
+
 
     def start_thread(self):
         """读取需要开启的线程 传递参数开启线程"""
@@ -39,8 +37,7 @@ class AutoOrder(object):
                                        self.return_queue,data)
             order_thread.setDaemon(True)            # 设置线程为伴随线程
             order_thread.start()                    # 运行子线程
-            self.cursor.execute("update order_info set oi_status=1 where id=%s",data["id"])
-            self.db_cli.commit()                    # 更新订单状态为抢票中
+            self.automysql.autoExecute("update order_info set oi_status=1 where id=%s",data["id"])
 
     def end_thread(self):
         """读取需要结束的线程、把开关设为False"""
@@ -55,13 +52,12 @@ class AutoOrder(object):
         while (not self.return_queue.empty()): # 判断队列是否为空
             data_dict = self.return_queue.get()     # 获取队列数据
             if data_dict["data"]:                   # 更新订单状态
-                self.cursor.execute("update order_info set oi_status=2 where id=%s",data_dict["id"])
-                self.db_cli.commit()                # 发送邮件提醒
+                self.automysql.autoExecute("update order_info set oi_status=2 where id=%s",data_dict["id"])
+                                                    # 发送邮件提醒
                 resp = sendemail(data_dict["data"]["email"],data_dict["data"]["from"]+"-"+data_dict["data"]["to"])
                 print resp
             else:                                   # 更新结束状态
-                self.cursor.execute("update order_info set oi_status=4 where id=%s",data_dict["id"])
-                self.db_cli.commit()
+                self.automysql.autoExecute("update order_info set oi_status=4 where id=%s",data_dict["id"])
             self.switch_lock.acquire()              # 删除开关数据
             del self.thread_switch_dict[str(data_dict["id"])]
             self.switch_lock.release()
@@ -77,10 +73,7 @@ class AutoOrder(object):
         except Exception as e:
             print e
         finally:
-            self.cursor.execute("update order_info set oi_status=4 where (oi_status=1 or oi_status=0)")
-            self.db_cli.commit()
-            self.cursor.close()
-            self.db_cli.close()
+            self.automysql.autoExecute("update order_info set oi_status=4 where (oi_status=1 or oi_status=0)")
 
 
 if __name__ == "__main__":
