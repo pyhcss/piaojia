@@ -34,13 +34,14 @@ class QueryTrain(Base_Httpclient):
         url = "https://kyfw.12306.cn/otn/leftTicket/queryZ?" # 构造url
         data_list = [urllib.urlencode(i) for i in self.data]# 遍历数据组成参数列表
         url += "&".join(data_list)                          # 拼接url
-        request = self.request(url,headers=self.headers,request_timeout=5)    # 构建请求对象
+        request = self.request(url,headers=self.headers,request_timeout=10)    # 构建请求对象
         count = 0
         while True:
             try:
                 resp = yield self.fetch(request)            # 发送请求 获取返回值
                 data_dict = json.loads(resp.body)       # 解析json对象
             except Exception as e:
+                print "列车信息获取出错"
                 count += 1
                 if count <=3:
                     continue

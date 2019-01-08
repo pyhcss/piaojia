@@ -180,13 +180,13 @@ class SubmitOrder(BaseRequest):
         return:     {"new":"乘车人信息字符串","old":"乘车人信息字符串","chooseseats":"True"是否能选座}
         """
         url = "https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo"
-        if seattype == -5:                                 # 判断选择的坐席
+        if seattype == -6:                                 # 判断选择的坐席
             seat = "p"
-        elif seattype == -6:
-            seat = "M"
         elif seattype == -7:
+            seat = "M"
+        elif seattype == -8:
             seat = "O"
-        elif seattype == -14:
+        elif seattype == -15:
             seat = "4"
         elif seattype == -10:
             seat = "3"
