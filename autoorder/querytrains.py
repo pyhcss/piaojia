@@ -31,7 +31,7 @@ class GetTrain(BaseRequest):
         count = 0
         while True:
             try:
-                resp = self.opener.open(request,timeout=5).read()         # 发送请求 获取返回值
+                resp = self.opener.open(request,timeout=10).read()         # 发送请求 获取返回值
                 data_dict = json.loads(resp)                    # 解析json对象
             except Exception as e:
                 count += 1
@@ -56,13 +56,13 @@ class GetTrain(BaseRequest):
         seat_type_list = []                                     # 初始化需要提取的座位类型列表
         for i in seattypes:                                     # 遍历提交信息 转换为列表下标
             if i == u"特等座":
-                seat_type_list.append(-5)
-            elif i == u"一等座":
                 seat_type_list.append(-6)
-            elif i == u"二等座":
+            elif i == u"一等座":
                 seat_type_list.append(-7)
+            elif i == u"二等座":
+                seat_type_list.append(-8)
             elif i == u"软卧":
-                seat_type_list.append(-14)
+                seat_type_list.append(-15)
             elif i == u"硬卧":
                 seat_type_list.append(-10)
             elif i == u"硬座":
